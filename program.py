@@ -5,7 +5,7 @@ TODO: docstrings
 """
 
 from tkinter import *
-import random
+import random, copy
 
 class game:
     def __init__(self):
@@ -39,13 +39,13 @@ class game:
         self.key_pressed("d")
 
     def key_pressed(self, direction):
-        self.get_next_field(direction)
-        if self.game_over():
-            self.show_popup()
-        else:
-            self.add_number()
-            self.get_labels()
-            self.grid_labels()
+        if self.get_next_field(direction):
+            if self.game_over():
+                self.show_popup()
+            else:
+                self.add_number()
+                self.get_labels()
+                self.grid_labels()
 
     def show_popup(self):
         self.remove_bindings()
@@ -95,7 +95,7 @@ class game:
         return field_t
 
     def get_next_field(self, direction):
-        field = self.field
+        field = copy.copy(self.field)
         if direction == "u":
             field = self.rotate_field_right(field)
         elif direction == "l":
@@ -117,7 +117,12 @@ class game:
                     self.rotate_field_right(field))
         elif direction == "d":
             field = self.rotate_field_right(field)
-        self.field = field
+        
+        if field == self.field:
+            return False
+        else:
+            self.field = field
+            return True
 
     def move_field_right(self, field):
         for row in range(4):
@@ -141,10 +146,12 @@ class game:
                 row_new[3] = row_new[3] * 2
         elif row_new[1] == row_new[2]:
             row_new[1] = row_new[0]
+            row_new[0] = 0
             row_new[2] = row_new[2] * 2
         elif row_new[2] == row_new[3]:
             row_new[2] = row_new[1]
             row_new[1] = row_new[0]
+            row_new[0] = 0
             row_new[3] = row_new[3] * 2
         return row_new
     
