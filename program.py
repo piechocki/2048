@@ -183,11 +183,13 @@ class game:
                 width = 4
                 if self.field[x][y] == 0:
                     labels["l" + str(x) + str(y)] = Label(self.root,
-                    fg = self.colors[self.field[x][y]], bg = self.colors[self.field[x][y]], text="0",
+                    fg = self.colors[self.field[x][y]],
+                    bg = self.colors[self.field[x][y]], text="0",
                     font = font, height = height, width = width)
                 else:
                     labels["l" + str(x) + str(y)] = Label(self.root,
-                    bg = self.colors[self.field[x][y]], text=str(self.field[x][y]),
+                    bg = self.colors[self.field[x][y]],
+                    text=str(self.field[x][y]),
                     font = font, height = height, width = width)
         self.labels = labels
 
