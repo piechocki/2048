@@ -40,12 +40,14 @@ class game:
 
     def key_pressed(self, direction):
         if self.get_next_field(direction):
-            if self.game_over():
+            if not self.zero_exists():
                 self.show_popup()
             else:
                 self.add_number()
                 self.get_labels()
                 self.grid_labels()
+                if self.game_over():
+                    self.show_popup()
 
     def show_popup(self):
         self.remove_bindings()
@@ -70,12 +72,23 @@ class game:
         self.popup.update()
         self.init_bindings()
 
-    def game_over(self):
+    def zero_exists(self):
         for x in range(4):
             for y in range(4):
                 if self.field[x][y] == 0:
+                    return True
+        return False
+    
+    def game_over(self):
+        for x in range(3):
+            for y in range(4):
+                if self.field[x][y] == self.field[x + 1][y]:
                     return False
-        return True
+        for x in range(4):
+            for y in range(3):
+                if self.field[x][y] == self.field[x][y + 1]:
+                    return False
+        return not self.zero_exists()
 
     def add_number(self):
         while True:
@@ -137,22 +150,22 @@ class game:
         while len(row_new) != 4:
             row_new.append(0)
         row_new = list(reversed(row_new))
-        if row_new[0] == row_new[1]:
-            row_new[0] = 0
-            row_new[1] = row_new[1] * 2
-            if row_new[2] == row_new[3]:
-                row_new[2] = row_new[1]
+        if row_new[2] == row_new[3]:
+            row_new[3] = row_new[3] * 2
+            if row_new[0] == row_new[1]:
+                row_new[2] = row_new[1] * 2
                 row_new[1] = 0
-                row_new[3] = row_new[3] * 2
+            else:
+                row_new[2] = row_new[1]
+                row_new[1] = row_new[0]
+            row_new[0] = 0
         elif row_new[1] == row_new[2]:
             row_new[1] = row_new[0]
             row_new[0] = 0
             row_new[2] = row_new[2] * 2
-        elif row_new[2] == row_new[3]:
-            row_new[2] = row_new[1]
-            row_new[1] = row_new[0]
+        elif row_new[0] == row_new[1]:
+            row_new[1] = row_new[1] * 2
             row_new[0] = 0
-            row_new[3] = row_new[3] * 2
         return row_new
     
     def quit(self,event):
@@ -190,14 +203,15 @@ class game:
                 width = 4
                 if self.field[x][y] == 0:
                     labels["l" + str(x) + str(y)] = Label(self.root,
-                    fg = self.colors[self.field[x][y]],
-                    bg = self.colors[self.field[x][y]], text="0",
-                    font = font, height = height, width = width)
+                        fg = self.colors[0],
+                        bg = self.colors[0], text="0",
+                        font = font, height = height, width = width)
                 else:
                     labels["l" + str(x) + str(y)] = Label(self.root,
-                    bg = self.colors[self.field[x][y]],
-                    text=str(self.field[x][y]),
-                    font = font, height = height, width = width)
+                        bg = self.colors[min(self.field[x][y],
+                                             list(self.colors.keys())[-1])],
+                        text=str(self.field[x][y]),
+                        font = font, height = height, width = width)
         self.labels = labels
 
     def grid_labels(self):
