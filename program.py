@@ -27,18 +27,6 @@ class game:
         self.root.configure(background="AntiqueWhite3")
         self.root.mainloop()
 
-    def key_l(self,event):
-        self.key_pressed("l")
-
-    def key_r(self,event):
-        self.key_pressed("r")
-
-    def key_u(self,event):
-        self.key_pressed("u")
-
-    def key_d(self,event):
-        self.key_pressed("d")
-
     def key_return(self,event):
         widget = self.popup.focus_get()
         btn_text = widget.config('text')[-1]
@@ -177,10 +165,10 @@ class game:
 
     def init_bindings(self):
         self.root.bind('<Escape>', self.quit)
-        self.root.bind('<Left>', self.key_l)
-        self.root.bind('<Right>', self.key_r)
-        self.root.bind('<Up>', self.key_u)
-        self.root.bind('<Down>', self.key_d)
+        self.root.bind('<Left>', lambda event, k="l": self.key_pressed(k))
+        self.root.bind('<Right>', lambda event, k="r": self.key_pressed(k))
+        self.root.bind('<Up>', lambda event, k="u": self.key_pressed(k))
+        self.root.bind('<Down>', lambda event, k="d": self.key_pressed(k))
 
     def remove_bindings(self):
         self.root.unbind('<Left>')
