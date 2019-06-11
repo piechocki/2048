@@ -15,6 +15,7 @@ class game:
                        64:"orange red", 128:"light goldenrod",
                        256:"light goldenrod", 512:"light goldenrod",
                        1024:"yellow2", 2048:"gold"}
+        self.directions = {"d": 3, "l": 2, "u": 1, "r": 0}
         self.get_start_field()
         self.get_labels()
         self.grid_labels()
@@ -107,7 +108,7 @@ class game:
                 break
         self.field[x][y] = random.randint(1, 2) * 2
 
-    def rotate_field_right(self, field):
+    def rotate_field_right_once(self, field):
         field_t = []
         for x in range(4):
             field_t.append([0,0,0,0])
@@ -116,29 +117,23 @@ class game:
                 field_t[y][3-x] = field[x][y]
         return field_t
 
+    def rotate_field_right(self, field, direction, after_move = False):
+        if after_move and (direction == "u" or direction == "d"):
+            direction = "u" if direction == "d" else "d"
+        rotations_to_go = self.directions[direction]
+        if rotations_to_go == 0:
+            return field
+        else:
+            field_rotated = self.rotate_field_right_once(field)
+            directions = {y:x for x,y in self.directions.items()}
+            return self.rotate_field_right(field_rotated,
+                directions[rotations_to_go - 1])
+
     def get_next_field(self, direction):
         field = copy.copy(self.field)
-        if direction == "u":
-            field = self.rotate_field_right(field)
-        elif direction == "l":
-            field = self.rotate_field_right(
-                    self.rotate_field_right(field))
-        elif direction == "d":
-            field = self.rotate_field_right(
-                    self.rotate_field_right(
-                    self.rotate_field_right(field)))
-        
+        field = self.rotate_field_right(field, direction)
         field = self.move_field_right(field)
-
-        if direction == "u":
-            field = self.rotate_field_right(
-                    self.rotate_field_right(
-                    self.rotate_field_right(field)))
-        elif direction == "l":
-            field = self.rotate_field_right(
-                    self.rotate_field_right(field))
-        elif direction == "d":
-            field = self.rotate_field_right(field)
+        field = self.rotate_field_right(field, direction, True)
         
         if field == self.field:
             return False
