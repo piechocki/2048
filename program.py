@@ -1,7 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-TODO: docstrings
+This program contains the main class 'game' that instantiates a tkinter based
+gui with a new round of the game '2048'. The whole business logic of the game
+is included in this class.
+The rules can be read at https://en.wikipedia.org/wiki/2048_(video_game).
 """
 
 from tkinter import *
