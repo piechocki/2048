@@ -38,6 +38,12 @@ class game:
     def key_d(self,event):
         self.key_pressed("d")
 
+    def key_return(self,event):
+        widget = self.popup.focus_get()
+        btn_text = widget.config('text')[-1]
+        if btn_text == "Restart" or btn_text == "Quit":
+            widget.invoke()
+
     def key_pressed(self, direction):
         if self.get_next_field(direction):
             if not self.zero_exists():
@@ -57,17 +63,20 @@ class game:
         l.grid(row=0, column=0, columnspan=2, sticky=W+E+S, padx=100, pady=10)
         b1 = Button(self.popup, text="Restart", font = ("Arial", 10),
                     command=self.restart_game, width=10, bd=3)
+        b1.focus_set()
         b1.grid(row=1, column=0, sticky=E+N, padx=10, pady=10)
         b2 = Button(self.popup, text="Quit", font = ("Arial", 10),
                     command=self.root.quit, width=10, bd=3)
         b2.grid(row=1, column=1, sticky=W+N, padx=10, pady=10)
         self.popup.attributes('-topmost', True)
+        self.popup.bind('<Return>', self.key_return)
         self.popup.geometry("+350+350")
 
     def restart_game(self):
         self.get_start_field()
         self.get_labels()
         self.grid_labels()
+        self.popup.unbind('<Return>')
         self.popup.destroy()
         self.popup.update()
         self.init_bindings()
