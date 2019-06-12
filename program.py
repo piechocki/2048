@@ -12,6 +12,9 @@ import random, copy
 
 class game:
     def __init__(self):
+        """
+        Method to get a new instance of the game class with a new gui window.
+        """
         self.root = Tk()
         self.colors = {0:"AntiqueWhite2", 2:"AntiqueWhite1", 4:"bisque2",
                        8:"sandy brown", 16:"chocolate1", 32:"tomato",
@@ -22,7 +25,6 @@ class game:
         self.get_start_field()
         self.get_labels()
         self.grid_labels()
-
         self.init_bindings()
         #window width x window height + position right + position down
         self.root.geometry("+300+300")
@@ -31,12 +33,19 @@ class game:
         self.root.mainloop()
 
     def key_return(self,event):
+        """
+        Handles the event that the return key is pressed within the popup
+        window (if the game is over).
+        """
         widget = self.popup.focus_get()
         btn_text = widget.config('text')[-1]
         if btn_text == "Restart" or btn_text == "Quit":
             widget.invoke()
 
     def key_pressed(self, direction):
+        """
+        Handles the event that an arrow key is pressed within the main window.
+        """
         if self.get_next_field(direction):
             if not self.zero_exists():
                 self.show_popup()
@@ -48,6 +57,10 @@ class game:
                     self.show_popup()
 
     def show_popup(self):
+        """
+        Opens a popup window if the game is over to ask for a new game or to
+        quit.
+        """
         self.remove_bindings()
         self.popup = Toplevel(self.root)
         self.popup.wm_title("Game over")
@@ -65,6 +78,10 @@ class game:
         self.popup.geometry("+350+350")
 
     def restart_game(self):
+        """
+        Closes the popup window and starts a new round of the game in the main
+        window.
+        """
         self.get_start_field()
         self.get_labels()
         self.grid_labels()
@@ -74,6 +91,9 @@ class game:
         self.init_bindings()
 
     def zero_exists(self):
+        """
+        Checks whether there is at least one zero in the field.
+        """
         for x in range(4):
             for y in range(4):
                 if self.field[x][y] == 0:
@@ -81,6 +101,11 @@ class game:
         return False
     
     def game_over(self):
+        """
+        Checks whether the game is over yet, i.e. there are no equivalent
+        numbers adjacent to each other and furthermore there are no zeros
+        (no free space) on the field.
+        """
         for x in range(3):
             for y in range(4):
                 if self.field[x][y] == self.field[x + 1][y]:
@@ -92,6 +117,9 @@ class game:
         return not self.zero_exists()
 
     def add_number(self):
+        """
+        Adds a 2 or a 4 to a random free coordinate on the field.
+        """
         while True:
             x = random.randint(0,3)
             y = random.randint(0,3)
@@ -100,6 +128,9 @@ class game:
         self.field[x][y] = random.randint(1, 2) * 2
 
     def rotate_field_right_once(self, field):
+        """
+        Rotates the whole field 90 degrees to the right.
+        """
         field_t = []
         for x in range(4):
             field_t.append([0,0,0,0])
@@ -109,6 +140,15 @@ class game:
         return field_t
 
     def rotate_field_right(self, field, direction, after_move = False):
+        """
+        Rotates the whole field multiple times to the right. The rotation is
+        called recursively dependend on the direction (the arrow key that was
+        pressed). If the optional parameter 'after_move' is True, the rotation
+        is called after moving the numbers to the right, i.e. the field was
+        rotated before the move already and has to be rotated to its original
+        orientation now. While the direction equals the key that was initially
+        pressed, the number of rotation changes if after_move is True.
+        """
         if after_move and (direction == "u" or direction == "d"):
             direction = "u" if direction == "d" else "d"
         rotations_to_go = self.directions[direction]
@@ -121,6 +161,16 @@ class game:
                 directions[rotations_to_go - 1])
 
     def get_next_field(self, direction):
+        """
+        Calculates the next field after moving all numbers to a given
+        direction. The central logic for moving and merging the numbers on
+        the field is written for the case, that direction is equal to 'r'
+        (right). If the direction is not equal to 'r', the field is rotated,
+        then the moving and merging is executed on the rotated field and
+        finally the field is rotated again to its original orientation.
+        If the new field is different to the input field, the function returns
+        True and updates the field variable of the game class.
+        """
         field = copy.copy(self.field)
         field = self.rotate_field_right(field, direction)
         field = self.move_field_right(field)
@@ -133,11 +183,20 @@ class game:
             return True
 
     def move_field_right(self, field):
+        """
+        Move all numbers of the given field to the right direction and merge
+        adjacent equivalent numbers. Calculate the new field row by row
+        (divide & conquer).
+        """
         for row in range(4):
             field[row] = self.move_row_right(field[row])
         return field
 
     def move_row_right(self, row):
+        """
+        Move all numbers of the given row to the right direction and merge
+        adjacent equivalent numbers.
+        """
         row_new = []
         for col in range(3,-1,-1):
             if row[col] != 0:
@@ -164,9 +223,16 @@ class game:
         return row_new
     
     def quit(self,event):
+        """
+        Quits the application.
+        """
         self.root.destroy()
 
     def init_bindings(self):
+        """
+        Initializes the bindings for all keys that have a correspondent
+        function.
+        """
         self.root.bind('<Escape>', self.quit)
         self.root.bind('<Left>', lambda event, k="l": self.key_pressed(k))
         self.root.bind('<Right>', lambda event, k="r": self.key_pressed(k))
@@ -174,22 +240,37 @@ class game:
         self.root.bind('<Down>', lambda event, k="d": self.key_pressed(k))
 
     def remove_bindings(self):
+        """
+        Removes all bindings (except the escape command) to freeze the main
+        window if the game is over.
+        """
         self.root.unbind('<Left>')
         self.root.unbind('<Right>')
         self.root.unbind('<Up>')
         self.root.unbind('<Down>')
 
     def get_start_field(self):
+        """
+        Returns a new field with 4 numbers height and width filled with zeros
+        and two random numbers.
+        """
         field = []
         for x in range(4):
             field.append([])
             for y in range(4):
                 field[x].append(0)
         self.field = field
-        for x in range(2):
+        for _ in range(2):
             self.add_number()
 
     def get_labels(self):
+        """
+        Updates the dict of the main class that contains one label for each
+        number of the field. Each label is saved with the name 'l00' where the
+        first digit is the row and the second digit is the column of the
+        label. After updating the labels they can be rendered via the grid
+        function.
+        """
         labels = {}
         for x in range(4):
             for y in range(4):
@@ -210,9 +291,14 @@ class game:
         self.labels = labels
 
     def grid_labels(self):
+        """
+        Updates the grid and places all labels of the dict into the grid at
+        the position that is given with the dictionarys keys.
+        """
         for x in range(4):
             for y in range(4):
-                self.labels["l" + str(x) + str(y)].grid(row=x, column=y, padx=3, pady=3)
+                self.labels["l" + str(x) + str(y)].grid(row=x, column=y,
+                    padx=3, pady=3)
 
 if __name__ == "__main__":
     g = game()
