@@ -1,16 +1,21 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-This program contains the main class 'game' that instantiates a tkinter based
+This program contains the main class 'Game' that instantiates a tkinter based
 gui with a new round of the game '2048'. The whole business logic of the game
 is included in this class.
 The rules can be read at https://en.wikipedia.org/wiki/2048_(video_game).
 """
 
-from tkinter import *
-import random, copy
+from tkinter import Tk, Toplevel, Label, Button, N, E, S, W
+import random
+import copy
 
-class game:
+class Game:
+    """
+    Main class that includes all methods that are required to start a new
+    round of '2048' in a tkinter gui.
+    """
     def __init__(self):
         """
         Method to get a new instance of the game class with a new gui window.
@@ -26,20 +31,20 @@ class game:
         self.get_labels()
         self.grid_labels()
         self.init_bindings()
-        #window width x window height + position right + position down
+        # window width x window height + position right + position down
         self.root.geometry("+300+300")
         self.root.title("2048")
         self.root.configure(background="AntiqueWhite3")
         self.root.mainloop()
 
-    def key_return(self,event):
+    def key_return(self, event):
         """
         Handles the event that the return key is pressed within the popup
         window (if the game is over).
         """
         widget = self.popup.focus_get()
         btn_text = widget.config('text')[-1]
-        if btn_text == "Restart" or btn_text == "Quit":
+        if btn_text in ("Restart", "Quit"):
             widget.invoke()
 
     def key_pressed(self, direction):
@@ -64,15 +69,15 @@ class game:
         self.remove_bindings()
         self.popup = Toplevel(self.root)
         self.popup.wm_title("Game over")
-        l = Label(self.popup, text="This game is over!", font = ("Arial", 10))
-        l.grid(row=0, column=0, columnspan=2, sticky=W+E+S, padx=100, pady=10)
-        b1 = Button(self.popup, text="Restart", font = ("Arial", 10),
-                    command=self.restart_game, width=10, bd=3)
-        b1.focus_set()
-        b1.grid(row=1, column=0, sticky=E+N, padx=10, pady=10)
-        b2 = Button(self.popup, text="Quit", font = ("Arial", 10),
-                    command=self.root.quit, width=10, bd=3)
-        b2.grid(row=1, column=1, sticky=W+N, padx=10, pady=10)
+        lbl = Label(self.popup, text="This game is over!", font=("Arial", 10))
+        lbl.grid(row=0, column=0, columnspan=2, sticky=W+E+S, padx=100, pady=10)
+        btn1 = Button(self.popup, text="Restart", font=("Arial", 10),
+                      command=self.restart_game, width=10, bd=3)
+        btn1.focus_set()
+        btn1.grid(row=1, column=0, sticky=E+N, padx=10, pady=10)
+        btn2 = Button(self.popup, text="Quit", font=("Arial", 10),
+                      command=self.root.quit, width=10, bd=3)
+        btn2.grid(row=1, column=1, sticky=W+N, padx=10, pady=10)
         self.popup.attributes('-topmost', True)
         self.popup.bind('<Return>', self.key_return)
         self.popup.geometry("+350+350")
@@ -94,25 +99,25 @@ class game:
         """
         Checks whether there is at least one zero in the field.
         """
-        for x in range(4):
-            for y in range(4):
-                if self.field[x][y] == 0:
+        for col in range(4):
+            for row in range(4):
+                if self.field[col][row] == 0:
                     return True
-        return False
-    
+       return False
+
     def game_over(self):
         """
         Checks whether the game is over yet, i.e. there are no equivalent
         numbers adjacent to each other and furthermore there are no zeros
         (no free space) on the field.
         """
-        for x in range(3):
-            for y in range(4):
-                if self.field[x][y] == self.field[x + 1][y]:
+        for col in range(3):
+            for row in range(4):
+                if self.field[col][row] == self.field[col + 1][row]:
                     return False
-        for x in range(4):
-            for y in range(3):
-                if self.field[x][y] == self.field[x][y + 1]:
+        for col in range(4):
+            for row in range(3):
+                if self.field[col][row] == self.field[col][row + 1]:
                     return False
         return not self.zero_exists()
 
@@ -121,25 +126,26 @@ class game:
         Adds a 2 or a 4 to a random free coordinate on the field.
         """
         while True:
-            x = random.randint(0,3)
-            y = random.randint(0,3)
-            if self.field[x][y] == 0:
+            col = random.randint(0, 3)
+            row = random.randint(0, 3)
+            if self.field[col][row] == 0:
                 break
-        self.field[x][y] = random.randint(1, 2) * 2
+        self.field[col][row] = random.randint(1, 2) * 2
 
-    def rotate_field_right_once(self, field):
+    @staticmethod
+    def rotate_field_right_once(field):
         """
         Rotates the whole field 90 degrees to the right.
         """
         field_t = []
-        for x in range(4):
-            field_t.append([0,0,0,0])
-        for x in range(4):
-            for y in range(4):
-                field_t[y][3-x] = field[x][y]
+        for col in range(4):
+            field_t.append([0, 0, 0, 0])
+        for col in range(4):
+            for row in range(4):
+                field_t[row][3-col] = field[col][row]
         return field_t
 
-    def rotate_field_right(self, field, direction, after_move = False):
+    def rotate_field_right(self, field, direction, after_move=False):
         """
         Rotates the whole field multiple times to the right. The rotation is
         called recursively dependend on the direction (the arrow key that was
@@ -149,16 +155,15 @@ class game:
         orientation now. While the direction equals the key that was initially
         pressed, the number of rotation changes if after_move is True.
         """
-        if after_move and (direction == "u" or direction == "d"):
+        if after_move and direction in ("u", "d"):
             direction = "u" if direction == "d" else "d"
         rotations_to_go = self.directions[direction]
         if rotations_to_go == 0:
             return field
-        else:
-            field_rotated = self.rotate_field_right_once(field)
-            directions = {y:x for x,y in self.directions.items()}
-            return self.rotate_field_right(field_rotated,
-                directions[rotations_to_go - 1])
+        field_rotated = self.rotate_field_right_once(field)
+        directions = {y:x for x, y in self.directions.items()}
+        return self.rotate_field_right(field_rotated,
+                                       directions[rotations_to_go - 1])
 
     def get_next_field(self, direction):
         """
@@ -166,7 +171,7 @@ class game:
         direction. The central logic for moving and merging the numbers on
         the field is written for the case, that direction is equal to 'r'
         (right). If the direction is not equal to 'r', the field is rotated,
-        then the moving and merging is executed on the rotated field and
+       then the moving and merging is executed on the rotated field and
         finally the field is rotated again to its original orientation.
         If the new field is different to the input field, the function returns
         True and updates the field variable of the game class.
@@ -175,12 +180,10 @@ class game:
         field = self.rotate_field_right(field, direction)
         field = self.move_field_right(field)
         field = self.rotate_field_right(field, direction, True)
-        
         if field == self.field:
             return False
-        else:
-            self.field = field
-            return True
+        self.field = field
+        return True
 
     def move_field_right(self, field):
         """
@@ -192,13 +195,14 @@ class game:
             field[row] = self.move_row_right(field[row])
         return field
 
-    def move_row_right(self, row):
+    @staticmethod
+    def move_row_right(row):
         """
         Move all numbers of the given row to the right direction and merge
         adjacent equivalent numbers.
         """
         row_new = []
-        for col in range(3,-1,-1):
+        for col in range(3, -1, -1):
             if row[col] != 0:
                 row_new.append(row[col])
         while len(row_new) != 4:
@@ -221,10 +225,10 @@ class game:
             row_new[1] = row_new[1] * 2
             row_new[0] = 0
         return row_new
-    
-    def quit(self,event):
+
+    def quit(self, event):
         """
-        Quits the application.
+       Quits the application.
         """
         self.root.destroy()
 
@@ -255,10 +259,10 @@ class game:
         and two random numbers.
         """
         field = []
-        for x in range(4):
+        for col in range(4):
             field.append([])
-            for y in range(4):
-                field[x].append(0)
+            for _ in range(4):
+                field[col].append(0)
         self.field = field
         for _ in range(2):
             self.add_number()
@@ -272,22 +276,21 @@ class game:
         function.
         """
         labels = {}
-        for x in range(4):
-            for y in range(4):
+        for col in range(4):
+            for row in range(4):
                 font = ("Arial", 20)
                 height = 2
                 width = 4
-                if self.field[x][y] == 0:
-                    labels["l" + str(x) + str(y)] = Label(self.root,
-                        fg = self.colors[0],
-                        bg = self.colors[0], text="0",
-                        font = font, height = height, width = width)
+                if self.field[col][row] == 0:
+                    labels["l" + str(col) + str(row)] = Label(
+                        self.root, fg=self.colors[0], bg=self.colors[0],
+                        text="0", font=font, height=height, width=width)
                 else:
-                    labels["l" + str(x) + str(y)] = Label(self.root,
-                        bg = self.colors[min(self.field[x][y],
-                                             list(self.colors.keys())[-1])],
-                        text=str(self.field[x][y]),
-                        font = font, height = height, width = width)
+                    labels["l" + str(col) + str(row)] = Label(
+                        self.root, bg=self.colors[min(
+                            self.field[col][row], list(self.colors.keys())[-1])],
+                        text=str(self.field[col][row]), font=font, height=height,
+                        width=width)
         self.labels = labels
 
     def grid_labels(self):
@@ -295,10 +298,10 @@ class game:
         Updates the grid and places all labels of the dict into the grid at
         the position that is given with the dictionarys keys.
         """
-        for x in range(4):
-            for y in range(4):
-                self.labels["l" + str(x) + str(y)].grid(row=x, column=y,
-                    padx=3, pady=3)
+        for row in range(4):
+            for col in range(4):
+                self.labels["l" + str(row) + str(col)].grid(
+                    row=row, column=col, padx=3, pady=3)
 
 if __name__ == "__main__":
-    g = game()
+    GAME = Game()
