@@ -103,7 +103,7 @@ class Game:
             for row in range(4):
                 if self.field[col][row] == 0:
                     return True
-       return False
+        return False
 
     def game_over(self):
         """
@@ -171,7 +171,7 @@ class Game:
         direction. The central logic for moving and merging the numbers on
         the field is written for the case, that direction is equal to 'r'
         (right). If the direction is not equal to 'r', the field is rotated,
-       then the moving and merging is executed on the rotated field and
+        then the moving and merging is executed on the rotated field and
         finally the field is rotated again to its original orientation.
         If the new field is different to the input field, the function returns
         True and updates the field variable of the game class.
@@ -209,7 +209,7 @@ class Game:
             row_new.append(0)
         row_new = list(reversed(row_new))
         if row_new[2] == row_new[3]:
-            row_new[3] = row_new[3] * 2
+            row_new[3] *= 2
             if row_new[0] == row_new[1]:
                 row_new[2] = row_new[1] * 2
                 row_new[1] = 0
@@ -220,15 +220,15 @@ class Game:
         elif row_new[1] == row_new[2]:
             row_new[1] = row_new[0]
             row_new[0] = 0
-            row_new[2] = row_new[2] * 2
+            row_new[2] *= 2
         elif row_new[0] == row_new[1]:
-            row_new[1] = row_new[1] * 2
+            row_new[1] *= 2
             row_new[0] = 0
         return row_new
 
     def quit(self, event):
         """
-       Quits the application.
+        Quits the application.
         """
         self.root.destroy()
 
